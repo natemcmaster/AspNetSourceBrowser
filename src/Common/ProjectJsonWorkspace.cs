@@ -163,8 +163,8 @@ namespace Microsoft.DotNet.ProjectModel.Workspaces
                 folders = Path.GetDirectoryName(file).Replace(solutionDir, "")
                     .Split(new[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries);
             }
-
-            OnDocumentAdded(DocumentInfo.Create(id, file, folders, filePath: file, loader: loader));
+            var title = string.Join("/", folders) + Path.GetFileName(file);
+            OnDocumentAdded(DocumentInfo.Create(id, title, folders, filePath: file, loader: loader));
         }
 
         private MetadataReference GetMetadataReference(string path)

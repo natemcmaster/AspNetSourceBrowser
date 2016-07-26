@@ -11,15 +11,15 @@ $buildDir = Join-Path $PSScriptRoot bin
 $artifacts = Join-Path $PSScriptRoot artifacts
 # remove-item $buildDir -Recurse
 
-remove-item $artifacts -Recurse
+remove-item $artifacts -Recurse -ErrorAction Ignore
 
 mkdir $buildDir -ErrorAction Ignore | Out-Null
 mkdir $buildDir/zip -ErrorAction Ignore | Out-Null
-mkdir $buildDir/master -ErrorAction Ignore | Out-Null
+mkdir $buildDir/$branch -ErrorAction Ignore | Out-Null
 
 $repos | % { 
     $unzip = Join-Path $buildDir "src/$_"
-    $zip = Join-Path $buildDir "zip/$_.zip"
+    $zip = Join-Path $buildDir "zip/$_-$branch.zip"
     if (!(Test-Path $zip)) {
         iwr https://github.com/aspnet/$_/archive/$branch.zip -OutFile $zip -Verbose
     }
@@ -31,8 +31,8 @@ $repos | % {
     }
 
     Get-ChildItem $unzip/src/* -Directory |
-        # filter test projects in src/
-        ? { !($_ -like '*.Testing' -or $_ -like '*.Tests') } |
+        # filter projects
+        ? { !($_ -like '*.Testing' -or $_ -like '*.Tests' -or $_ -like 'PageGenerator') } |
         ? { 
             if (!(Test-Path $_/project.json)) {
                 return $True
@@ -44,19 +44,31 @@ $repos | % {
             return !$isNetCoreApp
         } |
         % {
-            if (Test-Path $_) {
+            $dest="$buildDir/$branch/$(Split-Path -Leaf $_)"
+            if (Test-Path $dest) {
                 Write-Host "Skipping '$_'. Already exists."
                 return
             }
             Write-Verbose "Copying $_"
-            Copy-Item $_ -Recurse $buildDir/master
+            Copy-Item $_ -Recurse $buildDir/$branch
         }
 }
 
-'{}' | Out-File $buildDir/master/global.json
+'{}' | Out-File $buildDir/$branch/global.json
 
-dotnet restore $buildDir/master
+Write-Host "Restoring packages" -ForegroundColor Blue
+dotnet restore $buildDir/$branch
+
+if ($LASTEXITCODE -ne 0) {
+    Write-Error "Restore failed"
+}
 
 & 'C:\Program Files (x86)\msbuild\14.0\Bin\MSBuild.exe' $PSScriptRoot/SourceBrowser.sln /p:Configuration=$Config
+if ($LASTEXITCODE -ne 0) {
+    Write-Error "Build failed"
+}
 
-& "$PSScriptRoot\bin\$Config\HtmlGenerator\HtmlGenerator.exe" $buildDir/master/global.json /out:$artifacts/website/
+& "$PSScriptRoot\bin\$Config\HtmlGenerator\HtmlGenerator.exe" $buildDir/$branch/global.json /out:$artifacts/website/
+if ($LASTEXITCODE -ne 0) {
+    Write-Error "Generation failed"
+}

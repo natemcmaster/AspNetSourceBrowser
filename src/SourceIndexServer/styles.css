@@ -491,7 +491,7 @@ a i {
 .rH {
     margin-right: 0px;
     padding: 8px;
-    background-color: #68217A;
+    background-color: #3d457e;
     color: white;
 }
 
@@ -612,7 +612,7 @@ a i {
 
 #downloadButton {
     text-align: center;
-    background-color: #68217A;
+    background-color: #3d457e;
     color: white;
     font-size: 16pt;
     padding: 40px;
@@ -861,7 +861,7 @@ ol a, ol a:link, ol a:hover, ol a:focus, ol a:active,
 .tabChannel {
     margin: 0px;
     padding: 0px;
-    background-color: #68217A;
+    background-color: #3d457e;
 }
 
 .activeTab {
@@ -874,7 +874,7 @@ ol a, ol a:link, ol a:hover, ol a:focus, ol a:active,
 }
 
 .inactiveTab {
-    background-color: #68217A;
+    background-color: #3d457e;
     color: white;
     padding-left: 16px;
     padding-top: 6px;
