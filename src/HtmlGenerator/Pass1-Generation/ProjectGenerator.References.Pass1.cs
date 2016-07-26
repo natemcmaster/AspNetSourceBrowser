@@ -202,9 +202,12 @@ namespace Microsoft.SourceBrowser.HtmlGenerator
                 list.Add(Project.Solution.GetProject(projectReference.ProjectId).AssemblyName);
             }
 
-            foreach (var metadataReference in Project.MetadataReferences.OrderBy(m => Path.GetFileNameWithoutExtension(m.Display)))
+            foreach (var metadataReference in Project.MetadataReferences.Where(m => m.Display != "<in-memory assembly>").OrderBy(m => m.Display))
             {
-                list.Add(Path.GetFileNameWithoutExtension(metadataReference.Display));
+                var name = metadataReference.Display.EndsWith("project.json")
+                    ? ProjectJsonUtilities.GetCompatibleProjectContext(metadataReference.Display).ProjectFile.Name
+                    : Path.GetFileNameWithoutExtension(metadataReference.Display);
+                list.Add(name);
             }
 
             File.WriteAllText(index, string.Join(Environment.NewLine, list));

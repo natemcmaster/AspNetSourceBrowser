@@ -5,6 +5,9 @@ using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using Microsoft.Build.Construction;
 using Microsoft.Build.Evaluation;
+using Microsoft.DotNet.ProjectModel;
+using Microsoft.DotNet.ProjectModel.FileSystemGlobbing;
+using Microsoft.DotNet.ProjectModel.FileSystemGlobbing.Abstractions;
 
 namespace Microsoft.SourceBrowser.Common
 {
@@ -26,10 +29,26 @@ namespace Microsoft.SourceBrowser.Common
             {
                 return GetAssemblyNamesFromSolution(projectOrSolutionFilePath);
             }
+            else if (projectOrSolutionFilePath.EndsWith("project.json"))
+            {
+                return new[] { GetAssemblyNameFromProjectJson(projectOrSolutionFilePath) };
+            }
+            else if (projectOrSolutionFilePath.EndsWith("global.json"))
+            {
+                return ProjectJsonUtilities.GetProjects(projectOrSolutionFilePath)
+                    .Select(GetAssemblyNameFromProjectJson);
+            }
             else
             {
                 return new[] { GetAssemblyNameFromProject(projectOrSolutionFilePath) };
             }
+        }
+
+        public static string GetAssemblyNameFromProjectJson(string projectFilePath)
+        {
+            var project = ProjectJsonUtilities.GetCompatibleProjectContext(projectFilePath);
+
+            return project.GetOutputPaths("Debug").CompilationFiles.Assembly;
         }
 
         public static string GetAssemblyNameFromProject(string projectFilePath)

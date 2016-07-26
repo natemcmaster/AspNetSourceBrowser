@@ -96,9 +96,12 @@ namespace Microsoft.SourceBrowser.HtmlGenerator
                 assemblyNames.Add(projectReference);
             }
 
-            foreach (var metadataReference in Project.MetadataReferences.Select(m => Path.GetFileNameWithoutExtension(m.Display)))
+            foreach (var metadataReference in Project.MetadataReferences.Where(m => m.Display != "<in-memory assembly>").OrderBy(m => m.Display))
             {
-                assemblyNames.Add(metadataReference);
+                var name = metadataReference.Display.EndsWith("project.json")
+                    ? ProjectJsonUtilities.GetCompatibleProjectContext(metadataReference.Display).ProjectFile.Name
+                    : Path.GetFileNameWithoutExtension(metadataReference.Display);
+                assemblyNames.Add(name);
             }
 
             var usedReferences = new HashSet<string>(this.UsedReferences, StringComparer.OrdinalIgnoreCase);

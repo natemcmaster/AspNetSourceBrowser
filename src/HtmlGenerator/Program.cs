@@ -132,7 +132,9 @@ namespace Microsoft.SourceBrowser.HtmlGenerator
 
             return filePath.EndsWith(".sln", StringComparison.OrdinalIgnoreCase) ||
                    filePath.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase) ||
-                   filePath.EndsWith(".vbproj", StringComparison.OrdinalIgnoreCase);
+                   filePath.EndsWith(".vbproj", StringComparison.OrdinalIgnoreCase) ||
+                   filePath.EndsWith("project.json", StringComparison.OrdinalIgnoreCase) ||
+                   filePath.EndsWith("global.json");
         }
 
         private static void PrintUsage()

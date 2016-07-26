@@ -28,24 +28,31 @@ namespace Microsoft.SourceBrowser.HtmlGenerator
                 var destinationFileName = Path.Combine(ProjectDestinationFolder, title) + ".html";
 
                 AddDeclaredSymbolToRedirectMap(SymbolIDToListOfLocationsMap, SymbolIdService.GetId(title), title, 0);
+                if (!ProjectFilePath.EndsWith("project.json"))
+                {
+                    // ProjectCollection caches the environment variables it reads at startup
+                    // and doesn't re-get them later. We need a new project collection to read
+                    // the latest set of environment variables.
+                    projectCollection = new ProjectCollection();
+                    this.msbuildProject = new Project(
+                        ProjectFilePath,
+                        null,
+                        null,
+                        projectCollection,
+                        ProjectLoadSettings.IgnoreMissingImports);
 
-                // ProjectCollection caches the environment variables it reads at startup
-                // and doesn't re-get them later. We need a new project collection to read
-                // the latest set of environment variables.
-                projectCollection = new ProjectCollection();
-                this.msbuildProject = new Project(
-                    ProjectFilePath,
-                    null,
-                    null,
-                    projectCollection,
-                    ProjectLoadSettings.IgnoreMissingImports);
+                    var msbuildSupport = new MSBuildSupport(this);
+                    msbuildSupport.Generate(ProjectFilePath, destinationFileName, msbuildProject, true);
 
-                var msbuildSupport = new MSBuildSupport(this);
-                msbuildSupport.Generate(ProjectFilePath, destinationFileName, msbuildProject, true);
+                    GenerateXamlFiles(msbuildProject);
 
-                GenerateXamlFiles(msbuildProject);
-
-                GenerateTypeScriptFiles(msbuildProject);
+                    GenerateTypeScriptFiles(msbuildProject);
+                }
+                else
+                {
+                    var projectJsonSupport = new JsonSupport(this);
+                    projectJsonSupport.Generate(ProjectFilePath, destinationFileName);
+                }
 
                 OtherFiles.Add(title);
             }

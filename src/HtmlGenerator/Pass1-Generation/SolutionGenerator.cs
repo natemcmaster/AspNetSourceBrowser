@@ -71,19 +71,7 @@ namespace Microsoft.SourceBrowser.HtmlGenerator
                 outputAssemblyPath);
         }
 
-        public IEnumerable<string> GetAssemblyNames()
-        {
-            if (solution != null)
-            {
-                return solution.Projects.Select(p => p.AssemblyName);
-            }
-            else
-            {
-                return Enumerable.Empty<string>();
-            }
-        }
-
-        private static MSBuildWorkspace CreateWorkspace(ImmutableDictionary<string, string> propertiesOpt = null)
+        private static MSBuildWorkspace CreateMsBuildWorkspace(ImmutableDictionary<string, string> propertiesOpt = null)
         {
             propertiesOpt = propertiesOpt ?? ImmutableDictionary<string, string>.Empty;
 
@@ -102,7 +90,7 @@ namespace Microsoft.SourceBrowser.HtmlGenerator
             string projectSourceFolder,
             string outputAssemblyPath)
         {
-            var workspace = CreateWorkspace();
+            var workspace = CreateMsBuildWorkspace();
             var projectInfo = CommandLineProject.CreateProjectInfo(
                 projectName,
                 language,
@@ -356,7 +344,7 @@ namespace Microsoft.SourceBrowser.HtmlGenerator
                 if (solutionFilePath.EndsWith(".sln", StringComparison.OrdinalIgnoreCase))
                 {
                     properties = AddSolutionProperties(properties, solutionFilePath);
-                    var workspace = CreateWorkspace(properties);
+                    var workspace = CreateMsBuildWorkspace(properties);
                     workspace.SkipUnrecognizedProjects = true;
                     workspace.WorkspaceFailed += WorkspaceFailed;
                     solution = workspace.OpenSolutionAsync(solutionFilePath).GetAwaiter().GetResult();
@@ -366,10 +354,22 @@ namespace Microsoft.SourceBrowser.HtmlGenerator
                     solutionFilePath.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase) ||
                     solutionFilePath.EndsWith(".vbproj", StringComparison.OrdinalIgnoreCase))
                 {
-                    var workspace = CreateWorkspace(properties);
+                    var workspace = CreateMsBuildWorkspace(properties);
                     workspace.WorkspaceFailed += WorkspaceFailed;
                     solution = workspace.OpenProjectAsync(solutionFilePath).GetAwaiter().GetResult().Solution;
                     this.workspace = workspace;
+                }
+                else if (solutionFilePath.EndsWith("global.json"))
+                {
+                    this.workspace = ProjectJsonUtilities.CreateWorkspaceFromGlobal(solutionFilePath);
+                    workspace.WorkspaceFailed += WorkspaceFailed;
+                    solution = workspace.CurrentSolution;
+                }
+                else if (solutionFilePath.EndsWith("project.json", StringComparison.OrdinalIgnoreCase))
+                {
+                    this.workspace = ProjectJsonUtilities.CreateWorkspace(solutionFilePath);
+                    workspace.WorkspaceFailed += WorkspaceFailed;
+                    solution = workspace.CurrentSolution;
                 }
                 else if (
                     solutionFilePath.EndsWith(".dll", StringComparison.OrdinalIgnoreCase) ||
@@ -382,11 +382,6 @@ namespace Microsoft.SourceBrowser.HtmlGenerator
                         solution.Workspace.WorkspaceFailed += WorkspaceFailed;
                         workspace = solution.Workspace;
                     }
-                }
-
-                if (solution == null)
-                {
-                    return null;
                 }
 
                 return solution;

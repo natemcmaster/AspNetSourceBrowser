@@ -11,7 +11,7 @@ namespace Microsoft.SourceBrowser.HtmlGenerator
     {
         public void AddProjectsToSolutionExplorer(Folder root, IEnumerable<Project> projects)
         {
-            if (!ProjectFilePath.EndsWith(".sln", StringComparison.OrdinalIgnoreCase))
+            if (!ProjectFilePath.EndsWith(".sln", StringComparison.OrdinalIgnoreCase) && !ProjectFilePath.EndsWith("global.json"))
             {
                 return;
             }
