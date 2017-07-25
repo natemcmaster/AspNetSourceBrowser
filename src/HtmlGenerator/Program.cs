@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Text.RegularExpressions;
-using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.SourceBrowser.Common;
 
@@ -11,12 +10,30 @@ namespace Microsoft.SourceBrowser.HtmlGenerator
 {
     public class Program
     {
-        private static void Main(string[] args)
+        private const int HELP = 2;
+        private const int ERR = 1;
+        private const int OK = 0;
+
+        internal static int Main(string[] args)
+        {
+            try
+            {
+                return new Program().Run(args);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("Unexpected error.");
+                Console.Error.WriteLine(ex.ToString());
+                return ERR;
+            }
+        }
+
+        private int Run(string[] args)
         {
             if (args.Length == 0)
             {
                 PrintUsage();
-                return;
+                return HELP;
             }
 
             var projects = new List<string>();
@@ -86,7 +103,7 @@ namespace Microsoft.SourceBrowser.HtmlGenerator
             if (projects.Count == 0)
             {
                 PrintUsage();
-                return;
+                return HELP;
             }
 
             AssertTraceListener.Register();
@@ -108,6 +125,8 @@ namespace Microsoft.SourceBrowser.HtmlGenerator
                 IndexSolutions(projects, properties);
                 FinalizeProjects(emitAssemblyList);
             }
+
+            return OK;
         }
 
         private static void AddProject(List<string> projects, string path)

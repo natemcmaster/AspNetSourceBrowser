@@ -18,6 +18,7 @@
     "SourceIndexServer": {
       "commandName": "Project",
       "launchBrowser": true,
+      "workingDirectory": "../../bin/HtmlGenerator/Debug/net46/Index/",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },

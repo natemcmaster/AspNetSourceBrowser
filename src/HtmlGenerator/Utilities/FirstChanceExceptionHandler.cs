@@ -101,7 +101,7 @@ namespace Microsoft.SourceBrowser.HtmlGenerator
                     return;
                 }
 
-                string stackTrace = ex.StackTrace;
+                string stackTrace = ex.StackTrace ?? string.Empty;
                 if (stackTrace.Contains("Antlr"))
                 {
                     return;
