@@ -2,15 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net;
-using System.Net.Http;
 using System.Text;
-using System.Web.Http;
+using Microsoft.AspNetCore;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.SourceBrowser.Common;
 using Microsoft.SourceBrowser.SourceIndexServer.Models;
 
 namespace Microsoft.SourceBrowser.SourceIndexServer.Controllers
 {
-    public class SymbolsController : ApiController
+    public class SymbolsController : Controller
     {
         private const int MaxInputLength = 260;
         private static readonly Dictionary<string, int> usages = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
@@ -18,7 +18,7 @@ namespace Microsoft.SourceBrowser.SourceIndexServer.Controllers
         private static int requestsServed = 0;
 
         [HttpGet]
-        public HttpResponseMessage GetHtml(string symbol)
+        public IActionResult GetHtml(string symbol)
         {
             string result = null;
             try
@@ -30,9 +30,7 @@ namespace Microsoft.SourceBrowser.SourceIndexServer.Controllers
                 result = Markup.Note(ex.ToString());
             }
 
-            var response = new HttpResponseMessage(HttpStatusCode.OK);
-            response.Content = new StringContent(result, Encoding.UTF8, "text/html");
-            return response;
+            return Content(result, "text/html", Encoding.UTF8);
         }
 
         private string UpdateUsages()

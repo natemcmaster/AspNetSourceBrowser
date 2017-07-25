@@ -17,7 +17,7 @@ mkdir $buildDir -ErrorAction Ignore | Out-Null
 mkdir $buildDir/zip -ErrorAction Ignore | Out-Null
 mkdir $buildDir/$branch -ErrorAction Ignore | Out-Null
 
-$repos | % { 
+$repos | % {
     $unzip = Join-Path $buildDir "src/$_"
     $zip = Join-Path $buildDir "zip/$_-$branch.zip"
     if (!(Test-Path $zip)) {
@@ -33,7 +33,7 @@ $repos | % {
     Get-ChildItem $unzip/src/* -Directory |
         # filter projects
         ? { !($_ -like '*.Testing' -or $_ -like '*.Tests' -or $_ -like 'PageGenerator') } |
-        ? { 
+        ? {
             if (!(Test-Path $_/project.json)) {
                 return $True
             }
@@ -54,8 +54,6 @@ $repos | % {
         }
 }
 
-'{}' | Out-File $buildDir/$branch/global.json
-
 Write-Host "Restoring packages" -ForegroundColor Blue
 dotnet restore $buildDir/$branch
 
@@ -63,7 +61,7 @@ if ($LASTEXITCODE -ne 0) {
     Write-Error "Restore failed"
 }
 
-& 'C:\Program Files (x86)\msbuild\14.0\Bin\MSBuild.exe' $PSScriptRoot/SourceBrowser.sln /p:Configuration=$Config
+& dotnet build $PSScriptRoot/SourceBrowser.sln --configuration $Config
 if ($LASTEXITCODE -ne 0) {
     Write-Error "Build failed"
 }

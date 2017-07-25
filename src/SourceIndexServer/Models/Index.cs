@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using System.Web.Hosting;
 using Microsoft.SourceBrowser.Common;
 
 namespace Microsoft.SourceBrowser.SourceIndexServer.Models
@@ -56,7 +55,7 @@ namespace Microsoft.SourceBrowser.SourceIndexServer.Models
                         if (instance == null)
                         {
                             instance = new Index();
-                            var rootPath = HostingEnvironment.ApplicationPhysicalPath;
+                            var rootPath = AppContext.BaseDirectory;
                             Task.Run(() => IndexLoader.ReadIndex(instance, rootPath));
                             AppDomain.CurrentDomain.DomainUnload += CurrentDomain_DomainUnload;
                         }
